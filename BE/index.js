@@ -1,24 +1,22 @@
-// BE/index.js
-
+// index.js
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
-
-// Nhập dữ liệu giả lập từ file riêng
-const trafficData = require('./mockData');
+const env = require('./src/config/environment');
+const trafficRoutes = require('./src/routes/trafficRoutes');
 
 const app = express();
+
+// Khởi tạo Middleware
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 5000;
+// Điều hướng các request bắt đầu bằng /api/traffic sang file trafficRoutes quản lý
+app.use('/api/traffic', trafficRoutes);
 
-// API trả về dữ liệu giao thông cho Frontend
-app.get('/api/traffic', (req, res) => {
-    // Trả về file dữ liệu đã tách riêng
-    res.json(trafficData);
-});
-
-app.listen(PORT, () => {
-    console.log(`Server đang chạy tại cổng: ${PORT}`);
+// Khởi động cổng nghe
+app.listen(env.PORT, () => {
+  console.log(`==================================================`);
+  console.log(`🚀 Server đang vận hành mượt mà chuẩn cấu trúc MVC`);
+  console.log(`🔗 Link chạy thử: http://localhost:${env.PORT}/api/traffic/route-suggestions?originLat=20.994&originLng=105.807&destLat=21.028&destLng=105.854`);
+  console.log(`==================================================`);
 });

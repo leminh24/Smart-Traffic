@@ -1,0 +1,109 @@
+/* Reset cài đặt mặc định của trình duyệt */
+html, body {
+    height: 100%;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8fafc;
+    overflow: hidden;
+}
+
+/* Bản đồ chiếm 2 phần màn hình */
+#map {
+    flex: 2;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Sidebar chiếm 1 phần, giới hạn chiều rộng tối đa */
+#sidebar {
+    flex: 1;
+    max-width: 420px;
+    background: white;
+    padding: 24px;
+    box-shadow: -4px 0 15px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+}
+
+h2 {
+    color: #1e3a8a;
+    margin-bottom: 8px;
+    font-size: 24px;
+}
+
+.desc {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+/* Danh sách tuyến đường có thanh cuộn nếu quá dài */
+.route-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Cấu trúc thiết kế của từng thẻ tuyến đường */
+.route-card {
+    border: 2px solid #f1f5f9;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.route-card:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+/* Thẻ tuyến đường đang được người dùng bấm chọn */
+.route-card.active {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.route-info {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #1e293b;
+}
+
+.route-time {
+    color: #2563eb;
+    font-size: 16px;
+}
+
+.route-distance {
+    color: #64748b;
+    font-size: 13px;
+}
+
+/* Trạng thái loading ẩn mặc định */
+#status-loading {
+    display: none;
+    text-align: center;
+    color: #2563eb;
+    font-weight: 600;
+    padding: 12px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 15px;
+}

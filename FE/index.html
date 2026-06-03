@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Traffic</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div id="map"></div>
+    <div id="sidebar">
+        <h2>Smart Traffic</h2>
+        <p class="desc">Nhấn vào bản đồ để chọn điểm đến, hệ thống sẽ gợi ý hai tuyến đường với màu giao thông.</p>
+        <div id="status-loading">Đang tải dữ liệu giao thông...</div>
+        <div class="route-list" id="routesView"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="uiMapServices.js"></script>
+    <script src="index.js"></script>
+</body>
+</html>
