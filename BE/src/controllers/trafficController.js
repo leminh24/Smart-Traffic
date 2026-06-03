@@ -10,12 +10,15 @@ const getRouteSuggestions = async (req, res) => {
       return res.status(400).json({ success: false, error: "Thiếu tọa độ!" });
     }
 
-    const oLat = parseFloat(originLat);
-    const oLng = parseFloat(originLng);
-    const dLat = parseFloat(destLat);
-    const dLng = parseFloat(destLng);
+    const oLat = Number.parseFloat(originLat);
+    const oLng = Number.parseFloat(originLng);
+    const dLat = Number.parseFloat(destLat);
+    const dLng = Number.parseFloat(destLng);
 
-    // 🔥 THÊM TỪ KHÓA await Ở ĐÂY để đợi lấy đường thực tế
+    if (!Number.isFinite(oLat) || !Number.isFinite(oLng) || !Number.isFinite(dLat) || !Number.isFinite(dLng)) {
+      return res.status(400).json({ success: false, error: "Tọa độ không hợp lệ!" });
+    }
+
     const routes = await trafficService.getRouteSuggestions(oLat, oLng, dLat, dLng);
 
     return res.status(200).json({
