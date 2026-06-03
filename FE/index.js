@@ -1,7 +1,7 @@
 // FE/index.js
 
 // 1. Cấu hình địa chỉ API kết nối sang Backend Node.js
-const BACKEND_API = 'http://localhost:5000/api/traffic/route-suggestions';
+const BACKEND_API = 'https://smart-traffic-backend.onrender.com/api/traffic/route-suggestions';
 
 // 2. Vị trí mặc định ban đầu (Hà Nội)
 let userGps = { lat: 20.994, lng: 105.807 };
