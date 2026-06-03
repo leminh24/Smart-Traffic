@@ -14,9 +14,7 @@ app.use(express.json());
 app.use('/api/traffic', trafficRoutes);
 
 // Khởi động cổng nghe
-app.listen(env.PORT, () => {
-  console.log(`==================================================`);
-  console.log(`🚀 Server đang vận hành mượt mà chuẩn cấu trúc MVC`);
-  console.log(`🔗 Link chạy thử: http://localhost:${env.PORT}/api/traffic/route-suggestions?originLat=20.994&originLng=105.807&destLat=21.028&destLng=105.854`);
-  console.log(`==================================================`);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server đang chạy tại cổng ${PORT}`);
 });
