@@ -1,4 +1,6 @@
-/* Reset cài đặt mặc định của trình duyệt */
+/* =========================================================================
+   1. RESET CÀI ĐẶT MẶC ĐỊNH & LAYOUT CHÍNH
+   ========================================================================= */
 html, body {
     height: 100%;
 }
@@ -49,6 +51,134 @@ h2 {
     line-height: 1.5;
 }
 
+/* =========================================================================
+   2. GIAO DIỆN KHỐI THIẾT LẬP HÀNH TRÌNH THÔNG MINH (TRONG SIDEBAR)
+   ========================================================================= */
+#smart-settings-box {
+    display: none !important;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin: 0 0 20px 0; /* Cách lề dưới để không dính vào phần loading tuyến đường */
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+#smart-settings-box h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 16px;
+}
+
+/* Khung chứa ô chọn giờ giấc */
+.form-group-time {
+    margin-bottom: 10px;
+}
+
+.form-group-time label {
+    font-size: 13px;
+    display: block;
+    margin-bottom: 4px;
+    color: #64748b;
+}
+
+#commute-time-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    outline: none;
+    color: #334155;
+    box-sizing: border-box;
+}
+
+#commute-time-input:focus {
+    border-color: #2563eb;
+}
+
+/* Nhóm 2 nút Gán Vị Trí (Nhà / Công ty) */
+.settings-btn-group {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+#set-home-btn, #set-work-btn {
+    flex: 1;
+    color: #fff;
+    border: none;
+    padding: 8px 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    transition: background 0.2s ease;
+}
+
+#set-home-btn {
+    background: #28a745;
+}
+
+#set-home-btn:hover {
+    background: #218838;
+}
+
+#set-work-btn {
+    background: #007bff;
+}
+
+#set-work-btn:hover {
+    background: #0069d9;
+}
+
+#smart-settings-box hr {
+    border: 0;
+    border-top: 1px solid #e2e8f0;
+    margin: 12px 0;
+}
+
+/* Nút Bật thông báo đẩy */
+#enable-push-btn {
+    width: 100%;
+    background: #ffc107;
+    color: #000;
+    font-weight: bold;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+#enable-push-btn:hover {
+    background-color: #e0a800;
+}
+
+#enable-push-btn:active {
+    transform: scale(0.98);
+}
+
+
+/* =========================================================================
+   3. DANH SÁCH TUYẾN ĐƯỜNG & TRẠNG THÁI LOADING
+   ========================================================================= */
+
+/* Trạng thái loading và thông báo trạng thái chung */
+#status-loading {
+    display: block;
+    text-align: center;
+    color: #2563eb;
+    font-weight: 600;
+    padding: 12px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
 /* Danh sách tuyến đường có thanh cuộn nếu quá dài */
 .route-list {
     flex: 1;
@@ -94,22 +224,8 @@ h2 {
     color: #64748b;
     font-size: 13px;
 }
-
-/* Trạng thái loading ẩn mặc định */
-#status-loading {
-    display: none;
-    text-align: center;
-    color: #2563eb;
-    font-weight: 600;
-    padding: 12px;
-    background: #f0fdf4;
-    border-radius: 8px;
-    font-size: 14px;
-    margin-bottom: 15px;
-}
-
 /* =========================================================================
-   THAY ĐỔI: KHU VỰC THANH TÌM KIẾM ĐÔI NỔI TRÊN BẢN ĐỒ
+    4. KHU VỰC THANH TÌM KIẾM ĐÔI NỔI TRÊN BẢN ĐỒ
    ========================================================================= */
 
 /* Container tổng thể bọc ngoài thành một khối màu trắng */
@@ -123,13 +239,90 @@ h2 {
     padding: 12px;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Từng hàng chứa (Icon + Ô nhập) */
 .search-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    gap: 10px;
+}
+
+.search-row input {
+    flex: 1;
+    min-width: 0;
+}
+
+.search-actions {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.action-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 140px;
+    padding: 6px 0;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+    z-index: 2000;
+}
+
+.action-dropdown.visible {
+    display: block;
+}
+
+.dropdown-item {
+    width: 100%;
+    text-align: left;
+    padding: 10px 14px;
+    border: none;
+    background: transparent;
+    color: #0f172a;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.dropdown-item:hover {
+    background: #eff6ff;
+}
+
+/* Tách biệt hàng nhập điểm đến thứ hai (Dọn dẹp từ inline style HTML) */
+.search-container .search-row:nth-child(2) {
+    margin-top: 8px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 8px;
+}
+
+.search-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.inline-option-btn {
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+    border-radius: 8px;
+    padding: 7px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.inline-option-btn:hover {
+    background-color: #e2e8f0;
+    border-color: #94a3b8;
 }
 
 /* Ký hiệu vòng tròn xanh/đỏ trước mỗi ô nhập */
@@ -161,6 +354,7 @@ h2 {
 
 /* Hộp chứa danh sách gợi ý địa chỉ rớt xuống (Dropdown) */
 .suggestions-box {
+    display: none; /* Ẩn mặc định, JS sẽ bật khi có dữ liệu */
     background: #ffffff;
     border-radius: 8px;
     max-height: 260px;
@@ -189,4 +383,68 @@ h2 {
 .suggestion-item:hover {
     background-color: #f0fdf4; /* Đổi hiệu ứng nền hover sang tone xanh lá nhẹ */
     color: #2ecc71;
+}
+/* =========================================================================
+    5. CẤU HÌNH MENU THẢ XUỐNG ĐÔI (INLINE DROPDOWN) TRÊN THANH TÌM KIẾM
+   ========================================================================= */
+.search-actions {
+    position: relative;
+    margin-left: 8px;
+}
+
+/* Nút bấm Lưu inline cạnh ô Input */
+.inline-option-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+}
+
+.inline-option-btn:hover {
+    background: #1d4ed8;
+}
+
+/* Hộp menu thả xuống - Ẩn mặc định */
+.action-dropdown {
+    display: none; 
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1010;
+    min-width: 110px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+/* Hiển thị ra khi có class .visible do JS kích hoạt */
+.action-dropdown.visible {
+    display: block;
+}
+
+/* Các button con bên trong menu thả xuống */
+.dropdown-item {
+    width: 100%;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 13px;
+    color: #334155;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f5f9;
+    color: #2563eb;
 }

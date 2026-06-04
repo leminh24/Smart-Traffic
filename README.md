@@ -63,7 +63,7 @@ cd FE
 npm install
 
 # Khởi chạy server phát triển giao diện
-npm start
+npm run dev
 
 ```
 
