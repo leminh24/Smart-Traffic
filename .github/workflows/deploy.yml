@@ -1,0 +1,33 @@
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # Hoặc master tùy theo tên nhánh chính trên GitHub của ông
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài đặt Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Tiến hành Build dự án React + Vite
+        run: |
+          cd FE
+          npm install
+          npm run build
+
+      - name: Đẩy thư mục Dist lên nhánh GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: FE/dist # Chỉ định chính xác thư mục dist của FE sau khi build
+          branch: gh-pages # Nhánh tự động tạo ra để chạy web online
