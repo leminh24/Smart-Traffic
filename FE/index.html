@@ -8,6 +8,19 @@
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <div class="search-container">
+        <div class="search-row">
+            <span class="route-icon">🟢</span>
+            <input type="text" id="origin-input" placeholder="📍 Đang lấy vị trí GPS của bạn..." autocomplete="off">
+        </div>
+        
+        <div class="search-row" style="margin-top: 8px; border-top: 1px solid #f2f2f2; padding-top: 8px;">
+            <span class="route-icon">🔴</span>
+            <input type="text" id="search-input" placeholder="🔍 Nhập địa điểm cần đến tại Hà Nội..." autocomplete="off">
+        </div>
+        
+        <div id="suggestions-box" class="suggestions-box" style="display: none;"></div>
+    </div>
     <div id="map"></div>
     <div id="sidebar">
         <h2>Smart Traffic</h2>

@@ -107,3 +107,86 @@ h2 {
     font-size: 14px;
     margin-bottom: 15px;
 }
+
+/* =========================================================================
+   THAY ĐỔI: KHU VỰC THANH TÌM KIẾM ĐÔI NỔI TRÊN BẢN ĐỒ
+   ========================================================================= */
+
+/* Container tổng thể bọc ngoài thành một khối màu trắng */
+.search-container {
+    position: absolute;
+    top: 15px;
+    left: 60px; /* Tránh đè lên cụm nút phóng to/thu nhỏ mặc định của Leaflet */
+    z-index: 1000;
+    width: 360px; /* Tăng nhẹ lên 360px để hiển thị địa chỉ text dài thoáng hơn */
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Từng hàng chứa (Icon + Ô nhập) */
+.search-row {
+    display: flex;
+    align-items: center;
+}
+
+/* Ký hiệu vòng tròn xanh/đỏ trước mỗi ô nhập */
+.route-icon {
+    font-size: 14px;
+    margin-right: 12px;
+    user-select: none;
+}
+
+/* Áp dụng chung cho cả hai ô input (Điểm đi và Điểm đến) */
+.search-container input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    outline: none;
+    background-color: #f8fafc; /* Màu nền xám nhẹ khi ở trạng thái tĩnh */
+    color: #334155;
+    transition: all 0.2s ease;
+}
+
+/* Hiệu ứng đổi màu nền sáng lên khi người dùng click chuột vào gõ */
+.search-container input:focus {
+    border-color: #2ecc71;
+    background-color: #ffffff;
+    box-shadow: 0 0 8px rgba(46, 204, 113, 0.25);
+}
+
+/* Hộp chứa danh sách gợi ý địa chỉ rớt xuống (Dropdown) */
+.suggestions-box {
+    background: #ffffff;
+    border-radius: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    margin-top: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+}
+
+/* Từng dòng địa điểm gợi ý */
+.suggestion-item {
+    padding: 12px 15px;
+    font-size: 13.5px;
+    color: #334155;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Cắt chữ dài bằng dấu ... */
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: #f0fdf4; /* Đổi hiệu ứng nền hover sang tone xanh lá nhẹ */
+    color: #2ecc71;
+}
