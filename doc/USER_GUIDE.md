@@ -5,7 +5,7 @@ _Giải pháp điều hướng thông minh & Tối ưu lộ trình di chuyển_
 Chào mừng bạn đến với **Smart Traffic** – người bạn đồng hành tin cậy giúp bạn né tắc đường, tiết kiệm thời gian và di chuyển an toàn hơn mỗi ngày.
 
 màn hình điều khuyển chính:
-<img src="D:\baitap\Smart Traffic\FE\assets\map.png" alt="Bản đồ" width="500" height="300" />
+![Logo dự án](/FE/assets/map.png)
 
 ## 1. Khởi đầu nhanh
 
