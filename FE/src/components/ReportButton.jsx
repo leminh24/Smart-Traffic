@@ -66,7 +66,7 @@ export default function ReportButton({ origin, onReported }) {
       {/* Vị trí được điều chỉnh động dựa trên isMobile */}
       <div style={{ 
         position: 'fixed', 
-        bottom: isMobile ? '210px' : '100px', 
+        bottom: isMobile ? '310px' : '100px', 
         right: '20px', 
         zIndex: 1001 
       }}>
