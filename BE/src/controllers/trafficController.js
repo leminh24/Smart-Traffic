@@ -1,5 +1,6 @@
 // src/controllers/trafficController.js
 const trafficService = require('../services/trafficService');
+const notificationService = require('../services/notificationService');
 
 const getRouteSuggestions = async (req, res) => { 
   try {
@@ -36,6 +37,60 @@ const getRouteSuggestions = async (req, res) => {
   }
 };
 
+const reportIncident = async (req, res) => {
+  try {
+    const { lat, lng, type } = req.body;
+
+    // Kiểm tra đủ thông tin bắt buộc
+    const validTypes = ['TAC_DUONG', 'TAI_NAN', 'NGAP_LUT'];
+    if (!lat || !lng || !type) {
+      return res.status(400).json({ success: false, error: 'Thiếu thông tin: lat, lng, type là bắt buộc!' });
+    }
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ success: false, error: `Loại sự cố không hợp lệ. Chọn một trong: ${validTypes.join(', ')}` });
+    }
+
+    const parsedLat = parseFloat(lat);
+    const parsedLng = parseFloat(lng);
+    if (!isFinite(parsedLat) || !isFinite(parsedLng)) {
+      return res.status(400).json({ success: false, error: 'Tọa độ không hợp lệ!' });
+    }
+
+    // Lưu báo cáo qua Service
+    const incident = await trafficService.saveIncident({ lat: parsedLat, lng: parsedLng, type });
+
+    // Broadcast thông báo đến các user lân cận (không block response)
+    notificationService.broadcastIncidentToNearbyUsers(incident).catch(err =>
+      console.error('⚠️ [Notification] Lỗi broadcast:', err.message)
+    );
+
+    console.log(`✅ [Incident] Đã lưu báo cáo: ${type} tại (${parsedLat}, ${parsedLng})`);
+    return res.status(201).json({ success: true, data: incident });
+
+  } catch (error) {
+    console.error('❌ Lỗi tại reportIncident Controller:', error);
+    return res.status(500).json({ success: false, error: 'Lỗi hệ thống Backend!' });
+  }
+};
+
+const getIncidents = async (req, res) => {
+  try {
+    const { lat, lng, radius = 5 } = req.query;
+
+    // Nếu có tọa độ thì lọc theo bán kính (km), không có thì trả tất cả
+    const incidents = lat && lng
+      ? await trafficService.getIncidentsNearby(parseFloat(lat), parseFloat(lng), parseFloat(radius))
+      : await trafficService.getAllIncidents();
+
+    return res.status(200).json({ success: true, data: incidents });
+  } catch (error) {
+    console.error('❌ Lỗi tại getIncidents Controller:', error);
+    return res.status(500).json({ success: false, error: 'Lỗi hệ thống Backend!' });
+  }
+};
+
 module.exports = {
-  getRouteSuggestions
+  getRouteSuggestions,
+  reportIncident,
+  getIncidents
 };

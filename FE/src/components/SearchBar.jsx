@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 
 export default function SearchBar({ origin, setOrigin, destination, setDestination }) {
-  // Photon API hoàn toàn miễn phí và không cần API Key, dọn sạch đống Key cũ cho nhẹ nợ ông nhé!
-
   const [originQuery, setOriginQuery] = useState('')
   const [destQuery, setDestQuery] = useState('')
   
@@ -15,20 +13,28 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
   const [originDropdownOpen, setOriginDropdownOpen] = useState(false)
   const [destDropdownOpen, setDestDropdownOpen] = useState(false)
 
-  // State để load danh sách địa chỉ đã lưu từ LocalStorage hiển thị nhanh
   const [savedAddresses, setSavedAddresses] = useState({ homeLocation: null, workLocation: null })
+  
+  // State nhận diện thiết bị di động
+  const [isMobile, setIsMobile] = useState(false)
 
   const originTimeoutRef = useRef(null)
   const destTimeoutRef = useRef(null)
 
-  // Hàm định dạng địa chỉ từ các trường thuộc tính của Photon
+  // Theo dõi kích thước màn hình
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const formatPhotonAddress = (feature) => {
     if (!feature || !feature.properties) return 'Địa chỉ không xác định'
     const p = feature.properties
     return [p.name, p.street, p.city, p.country].filter(Boolean).join(', ')
   }
 
-  // FIX LỖI ĐỊA CHỈ: Lấy vị trí GPS thật và tự động dịch sang địa chỉ chữ bằng Photon Reverse Geocode
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('smartTrafficSavedAddresses') || '{}')
     setSavedAddresses(stored)
@@ -42,7 +48,6 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
           
           setOrigin(currentLoc)
 
-          // ĐÃ ĐỔI SANG PHOTON REVERSE GEOCODE: Dịch tọa độ sang tên đường Việt Nam chữ thật
           fetch(`https://photon.komoot.io/reverse?lat=${latitude}&lon=${longitude}`)
             .then(r => r.json())
             .then(data => {
@@ -69,7 +74,6 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
     setSavedAddresses(stored)
   }
 
-  // Tìm kiếm Điểm xuất phát (Photon API)
   function onOriginInput(e) {
     const value = e.target.value
     setOriginQuery(value)
@@ -86,22 +90,20 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
         .then(data => {
           if (data.features) {
             setOriginSuggestions(data.features)
-            setOriginVisible(true) // Đảm bảo bật hộp gợi ý lên khi có data
+            setOriginVisible(true)
           }
         })
-        .catch(err => console.error("Lỗi Photon Origin:", err))
+            .catch(err => console.error("Lỗi Photon Origin:", err))
     }, 400)
   }
 
   function pickOriginSuggestion(feature) {
-    // Bẫy GeoJSON: coordinates[0] là Lng, coordinates[1] là Lat
     const [lng, lat] = feature.geometry.coordinates
     setOrigin({ lat, lng })
     setOriginQuery(formatPhotonAddress(feature))
     setOriginVisible(false)
   }
 
-  // Tìm kiếm Điểm đến (Photon API)
   function onDestInput(e) {
     const value = e.target.value
     setDestQuery(value)
@@ -132,7 +134,6 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
     setDestVisible(false)
   }
 
-  // --- Giữ nguyên logic LocalStorage cải tiến của ông ---
   function saveCurrentOrigin(type) {
     if (!origin) return alert('Chưa có vị trí xuất phát để lưu')
     const key = 'smartTrafficSavedAddresses'
@@ -178,10 +179,11 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
   return (
     <div style={{
       position: 'fixed',
-      top: '15px',
-      left: '60px',
+      top: isMobile ? '10px' : '15px',
+      left: isMobile ? '10px' : '60px',
+      right: isMobile ? '10px' : 'auto',
+      width: isMobile ? 'auto' : '380px',
       zIndex: 1000,
-      width: '380px',
       background: '#fff',
       padding: '12px',
       borderRadius: '12px',
@@ -224,10 +226,9 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
       {/* Origin Dropdown Suggestions */}
       {originVisible && (
         <div style={styles.suggestionsBox}>
-          {/* Địa điểm đã lưu */}
           {(savedAddresses.homeLocation || savedAddresses.workLocation) && (
             <div style={{ background: '#f8fafc', paddingBottom: '4px' }}>
-              <div style={styles.sectionHeader}>⭐ Địa điểm đã lưu của ông</div>
+              <div style={styles.sectionHeader}>⭐ Địa điểm đã lưu</div>
               {savedAddresses.homeLocation && (
                 <div onClick={() => useSavedLocation(savedAddresses.homeLocation, true)} style={styles.savedItem}>
                   🏠 <b>Nhà riêng:</b> <span style={styles.truncatedText}>{savedAddresses.homeLocation.address}</span>
@@ -242,7 +243,6 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
             </div>
           )}
 
-          {/* Gợi ý từ Photon API */}
           {originSuggestions.length > 0 ? (
             originSuggestions.map((s, idx) => {
               const addressText = formatPhotonAddress(s)
@@ -301,10 +301,9 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
       {/* Destination Dropdown Suggestions */}
       {destVisible && (
         <div style={styles.suggestionsBox}>
-          {/* Địa điểm đã lưu */}
           {(savedAddresses.homeLocation || savedAddresses.workLocation) && (
             <div style={{ background: '#f8fafc', paddingBottom: '4px' }}>
-              <div style={styles.sectionHeader}>⭐ Địa điểm đã lưu của ông</div>
+              <div style={styles.sectionHeader}>⭐ Địa điểm đã lưu</div>
               {savedAddresses.homeLocation && (
                 <div onClick={() => useSavedLocation(savedAddresses.homeLocation, false)} style={styles.savedItem}>
                   🏠 <b>Nhà riêng:</b> <span style={styles.truncatedText}>{savedAddresses.homeLocation.address}</span>
@@ -319,7 +318,6 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
             </div>
           )}
 
-          {/* Gợi ý từ Photon API */}
           {destSuggestions.length > 0 ? (
             destSuggestions.map((s, idx) => {
               const addressText = formatPhotonAddress(s)
@@ -345,7 +343,6 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
   )
 }
 
-// Giữ nguyên Object CSS Inline sạch sẽ của ông
 const styles = {
   inputField: {
     flex: 1,
