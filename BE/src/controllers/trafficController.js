@@ -5,7 +5,7 @@ const notificationService = require('../services/notificationService');
 const getRouteSuggestions = async (req, res) => { 
   try {
     // 1. SỬA LỖI 1: Đổi tên biến bóc tách trùng khít với query string FE gửi lên (?oLat=...&oLng=...)
-    const { oLat, oLng, dLat, dLng } = req.query;
+    const { oLat, oLng, dLat, dLng, vehicle = 'foot' } = req.query;
 
     // Kiểm tra xem FE có truyền đủ 4 tham số ký hiệu viết tắt này không
     if (!oLat || !oLng || !dLat || !dLng) {
@@ -25,7 +25,7 @@ const getRouteSuggestions = async (req, res) => {
     }
 
     // Gọi tầng Service xử lý kết nối OSRM và phân đoạn kẹt xe
-    const routes = await trafficService.getRouteSuggestions(parsedOLat, parsedOLng, parsedDLat, parsedDLng);
+    const routes = await trafficService.getRouteSuggestions(parsedOLat, parsedOLng, parsedDLat, parsedDLng, vehicle);
 
     // 2. SỬA LỖI 2: Trả thẳng mảng `routes` về dạng thô (Raw Array) như FE đang mong đợi
     // Không bọc qua cấu trúc { success: true, data: routes } để tránh làm gãy logic vẽ bản đồ của Leaflet

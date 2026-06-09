@@ -47,7 +47,7 @@ cd BE
 npm install
 
 # Khởi chạy server Express chính
-npm start
+node index.js
 
 ```
 

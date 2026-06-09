@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import VehicleSelector from "./VehicleSelector"
+import ETAPanel from "./ETAPanel"
+import RouteWarning from "./RouteWarning"
 
 const WARNING_COLORS = {
   TAC_DUONG: { bg: '#fef2f2', border: '#ef4444', text: '#dc2626', icon: '🚗' },
@@ -6,10 +9,35 @@ const WARNING_COLORS = {
   NGAP_LUT:  { bg: '#eff6ff', border: '#3b82f6', text: '#2563eb', icon: '🌊' },
 }
 
-export default function Sidebar({ status, routes, selectedRouteIndex, setSelectedRouteIndex, nearbyWarning }) {
+/**
+ * @param {{
+ * status: string,
+ * routes: Array,
+ * selectedRouteIndex: number,
+ * setSelectedRouteIndex: (idx: number) => void,
+ * nearbyWarning: Object | null,
+ * mapRef: React.MutableRefObject,
+ * startCoords: {lat:number, lng:number} | null,
+ * endCoords:   {lat:number, lng:number} | null,
+ * warningSegments: string[],
+ * onVehicleChange: (vehicleId: string) => void,
+ * }} props
+ */
+export default function Sidebar({
+  status,
+  routes,
+  selectedRouteIndex,
+  setSelectedRouteIndex,
+  nearbyWarning,
+  mapRef,
+  startCoords,
+  endCoords,
+  warningSegments = [],
+  onVehicleChange
+}) {
   const warnStyle = nearbyWarning ? WARNING_COLORS[nearbyWarning.type] || WARNING_COLORS.TAC_DUONG : null
 
-  // State nhận diện thiết bị di động
+  // State nhận diện thiết bị di động từ Đoạn 1
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -20,7 +48,7 @@ export default function Sidebar({ status, routes, selectedRouteIndex, setSelecte
   }, [])
 
   return (
-    <div id="sidebar" style={{
+    <div id="sidebar" className="sidebar" style={{
       position: 'fixed',
       bottom: isMobile ? '10px' : '15px',
       left: isMobile ? '10px' : '60px',
@@ -35,9 +63,19 @@ export default function Sidebar({ status, routes, selectedRouteIndex, setSelecte
       zIndex: 999
     }}>
 
-      {/* ── Cảnh báo sự cố gần ────────────────────────────────────────────── */}
+      {/* 1. VEHICLE SELECTOR — đặt trên cùng sidebar */}
+      <VehicleSelector
+        mapRef={mapRef}
+        onVehicleChange={onVehicleChange}
+      />
+
+      {/* 2. ROUTE WARNING — hiện khi đi bộ gặp đoạn nguy hiểm */}
+      <RouteWarning segments={warningSegments} />
+
+      {/* ── Cảnh báo sự cố gần (Từ Đoạn 1) ────────────────────────────────── */}
       {nearbyWarning && warnStyle && (
         <div style={{
+          marginTop: '12px',
           marginBottom: '12px',
           padding: '10px 14px',
           background: warnStyle.bg,
@@ -60,10 +98,14 @@ export default function Sidebar({ status, routes, selectedRouteIndex, setSelecte
         </div>
       )}
 
-      <h3 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>Smart Traffic</h3>
-      <p style={{ fontSize: '12px', color: '#666', margin: '0 0 10px 0' }}>Cập nhật lúc {new Date().toLocaleTimeString('vi-VN')}</p>
+      {/* ── Tiêu đề và Trạng thái chính ──────────────────────────────────── */}
+      <h3 style={{ margin: '12px 0 4px 0', fontSize: '16px' }}>Smart Traffic</h3>
+      <p style={{ fontSize: '12px', color: '#666', margin: '0 0 10px 0' }}>
+        Cập nhật lúc {new Date().toLocaleTimeString('vi-VN')}
+      </p>
       <div style={{ fontSize: '13px', color: '#888', marginBottom: '12px' }}>{status}</div>
 
+      {/* ── Kết quả tìm kiếm / Danh sách tuyến đường ────────────────────────── */}
       <div id="routesView">
         {routes && routes.map((r, idx) => (
           <div
@@ -88,6 +130,13 @@ export default function Sidebar({ status, routes, selectedRouteIndex, setSelecte
         ))}
       </div>
 
+      {/* 3. ETA PANEL — đặt cuối sidebar, sau kết quả tìm kiếm */}
+      <ETAPanel
+        startCoords={startCoords}
+        endCoords={endCoords}
+      />
+
+      {/* CSS Animation cho pulseBorder */}
       <style>{`
         @keyframes pulseBorder {
           0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
