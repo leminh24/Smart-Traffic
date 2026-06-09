@@ -4,6 +4,46 @@ Toàn bộ tiến trình cập nhật, sửa lỗi cấu hình và cấu trúc m
 
 ---
 
+## [Nâng cấp] - 2026-06-09
+
+### Added
+
+- **Nhiệm vụ: Bảng so sánh 3 phương tiện cùng lúc (Comparative Vehicle ETA Panel)**:
+  - Tích hợp thành công **hộp so sánh ETA đa phương tiện** (`ETAComparisonPanel.tsx`) gọn trong Sidebar.
+  - Hiển thị song song thông tin quãng đường (`km`) và thời gian di chuyển (`phút`) cho 3 phương tiện: Đi bộ (🚶), Xe đạp (🚲), Ô tô (🚗).
+  - Thuộc tính thời gian cho ô tô tự động nhân với **hệ số giờ cao điểm (`rushHourFactor` mặc định 1.3)** như yêu cầu kĩ thuật.
+  - Hỗ trợ thay đổi & cấu hình hệ số giờ cao điểm trực tiếp trên giao diện Sidebar, tự động tính toán lại tức thì.
+  - Thêm hàm `fetchAllVehicleETA(startCoords, endCoords, factor)` trong `src/services/api.ts` gọi song song OSRM API 3 lần bằng `Promise.all` với các profile `foot`, `bicycle`, và `driving`.
+  - Tính km theo công thức: `(distance_meters / 1000).toFixed(1)`.
+  - Tính phút theo công thức: `Math.ceil(duration_seconds / 60)`.
+  - Luồng truyền và cập nhật dữ liệu tự động (Event-driven): Bảng được re-render tự động khi tọa độ xuất phát (origin) hoặc điểm đến (destination) thay đổi, cập nhật hoàn toàn thời gian thực (real-time) không load lại trang.
+
+### Changed
+
+- Cập nhật liên kết API của ứng dụng tích hợp cấu hình full-stack phục vụ đồng thời cả Express APIS và static assets tự động.
+- Nâng cấp `Sidebar.tsx` và `App.tsx` bằng TypeScript để tương thích hoàn toàn mã nguồn hệ thống.
+
+---
+
+## [Nâng cấp] - 2026-06-09
+
+### Added
+
+- **Tính năng Chọn Phương tiện Di chuyển (Vehicle Selector)** ở Frontend:
+  - Hiển thị 3 nút bấm phương tiện: 🚶 Đi bộ, 🛵 Xe máy, 🚗 Ô tô.
+  - Trạng thái nút active được highlight bằng đường viền màu accent (`--color-accent`).
+  - Mặc định chọn "Đi bộ" khi người dùng truy cập ứng dụng lần đầu tiên.
+  - Lưu trữ trạng thái được chọn trong `localStorage` với key `"selectedVehicle"`.
+  - Tự động xóa (reset) toàn bộ kết quả tìm đường và các đường vẽ polyline trên bản đồ Leaflet khi thay đổi phương tiện.
+  - Expose hàm toàn cục `window.getSelectedVehicle()` giúp các module khác dễ dàng truy xuất phương tiện phục vụ routing.
+  - Hỗ trợ đầy đủ cho cả luồng React (`VehicleSelector.jsx`) và Vanilla JS (`FE/index.js`).
+
+- **Định tuyến đa phương tiện (Multi-profile Routing)** ở Backend:
+  - Cho phép API `/api/traffic/route-suggestions` nhận thêm tham số `vehicle` từ Frontend.
+  - Cấu hình OSRM Service sử dụng các profile định tuyến phù hợp: `foot` khi chọn đi bộ, và `driving` khi đi xe máy hoặc ô tô.
+
+---
+
 ## [Bản sửa lỗi] - 2026-06-03
 
 ### Added

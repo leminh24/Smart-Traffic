@@ -62,7 +62,7 @@ async function getIncidentsNearby(lat, lng, radiusKm = 5) {
 }
 
 // ── OSRM ──────────────────────────────────────────────────────────────────────
-async function getRealRoadCoordinates(oLat, oLng, dLat, dLng) {
+async function getRealRoadCoordinates(oLat, oLng, dLat, dLng, vehicle = 'foot') {
   try {
     const originLat = parseFloat(oLat);
     const originLng = parseFloat(oLng);
@@ -74,7 +74,8 @@ async function getRealRoadCoordinates(oLat, oLng, dLat, dLng) {
       return null;
     }
 
-    const url = `https://router.project-osrm.org/route/v1/driving/${originLng},${originLat};${destLng},${destLat}?overview=full&geometries=geojson&alternatives=true`;
+    const profile = vehicle === 'foot' ? 'foot' : 'driving';
+    const url = `https://router.project-osrm.org/route/v1/${profile}/${originLng},${originLat};${destLng},${destLat}?overview=full&geometries=geojson&alternatives=true`;
     console.log(`📡 [OSRM Request] ${url}`);
 
     const response = await axios.get(url, {
@@ -158,8 +159,8 @@ function calculateActualTravelTime(baseDurationSeconds, segments) {
   return Math.max(1, Math.round(actualMinutes));
 }
 
-const getRouteSuggestions = async (oLat, oLng, dLat, dLng) => {
-  const rawRoutes = await getRealRoadCoordinates(oLat, oLng, dLat, dLng);
+const getRouteSuggestions = async (oLat, oLng, dLat, dLng, vehicle = 'foot') => {
+  const rawRoutes = await getRealRoadCoordinates(oLat, oLng, dLat, dLng, vehicle);
   if (!rawRoutes || rawRoutes.length === 0) return [];
 
   const suggestions = [];
