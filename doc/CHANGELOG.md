@@ -8,6 +8,29 @@ Toàn bộ tiến trình cập nhật, sửa lỗi cấu hình và cấu trúc m
 
 ### Added
 
+- **Tính năng Tùy chỉnh tuyến đường (Route Preferences)**:
+  - Thêm nút **⚙️ Settings** trong Sidebar.
+  - Panel cài đặt với 4 toggles:
+    - Tránh cao tốc / Highway (mặc định: OFF)
+    - Tránh đường thu phí (Toll) (mặc định: OFF)
+    - Tránh phà / Đò (Ferry) (mặc định: ON)
+    - Tránh đường đất / Unpaved (mặc định: OFF)
+  - Tái định tuyến **tự động ngay lập tức** khi thay đổi toggle.
+  - Lưu preferences vào `localStorage` (user profile).
+  - Truyền tham số `avoid` / `exclude` xuống OSRM qua Backend (`motorway`, `trunk`, `primary`, `ferry`, `toll`, `unpaved`, `track`).
+
+### Changed
+
+- Cập nhật `RoutePreferences.jsx` (component mới).
+- Sửa `Sidebar.jsx`, `App.jsx`, `api.js`, `trafficController.js`, `trafficService.js` để hỗ trợ truyền và xử lý preferences.
+- Cải tiến mapping `avoid/exclude` parameters cho cả 3 profile (foot, bike, driving).
+
+---
+
+## [Nâng cấp] - 2026-06-10
+
+### Added
+
 - **Luồng hiển thị tuyến theo trạng thái chọn phương tiện**:
   - Khi mở web hoặc chọn điểm đến mới, hệ thống reset trạng thái chọn phương tiện về chưa chọn.
   - Khi chưa chọn phương tiện, ứng dụng hiển thị tuyến ngắn nhất cho cả 3 phương tiện: đi bộ, xe máy và ô tô.

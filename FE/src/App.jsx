@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar'
 import ReportButton from './components/ReportButton'
 import { getRouteSuggestions, getIncidents } from './services/api'
 import { VEHICLES } from './components/VehicleSelector'
+import RoutePreferences from './components/RoutePreferences';
 
 const VEHICLE_ROUTE_META = {
   walk: { label: 'Đi bộ', osrmProfile: 'foot' },
@@ -21,6 +22,12 @@ export default function App() {
   const [selectedVehicle, setSelectedVehicle] = useState(null)
   const [incidents, setIncidents]             = useState([])
   const [nearbyWarning, setNearbyWarning]     = useState(null) // { label, distanceM, type }
+  const [routePreferences, setRoutePreferences] = useState(() => {
+    const saved = localStorage.getItem('routePreferences');
+    return saved ? JSON.parse(saved) : {
+      avoidHighway: false, avoidToll: false, avoidFerry: true, avoidUnpaved: false
+    };
+  });
 
   const pollingRef = useRef(null)
   const destinationResetRef = useRef(null)
@@ -30,7 +37,7 @@ export default function App() {
     if (origin && destination) fetchRoutes()
     else setRoutes([])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [origin, destination, selectedVehicle])
+  }, [origin, destination, selectedVehicle, routePreferences])
 
   useEffect(() => {
     localStorage.removeItem('selectedVehicle')
@@ -76,21 +83,30 @@ export default function App() {
   }
 
   // ── Fetch incidents + polling mỗi 15 giây ────────────────────────────────────
-  async function getRoutesForVehicle(vehicleId) {
+    async function getRoutesForVehicle(vehicleId) {
     const vehicle = VEHICLE_ROUTE_META[vehicleId]
-    const res = await getRouteSuggestions(origin, destination, vehicle?.osrmProfile)
+    const res = await getRouteSuggestions(
+      origin, 
+      destination, 
+      vehicle?.osrmProfile,
+      routePreferences   // ← THÊM preferences
+    )
     return decorateRoutes(res.slice(0, 2), vehicleId, false)
   }
 
   async function getShortestRoutesForAllVehicles() {
     const results = await Promise.all(VEHICLES.map(async (vehicle) => {
-      const res = await getRouteSuggestions(origin, destination, vehicle.osrmProfile)
+      const res = await getRouteSuggestions(
+        origin, 
+        destination, 
+        vehicle.osrmProfile,
+        routePreferences     // ← THÊM preferences
+      )
       const shortestRoute = pickShortestRoute(res)
       return shortestRoute ? decorateRoutes([shortestRoute], vehicle.id, true) : []
     }))
     return results.flat()
   }
-
   function pickShortestRoute(routeList) {
     return [...routeList].sort((a, b) => parseDistanceKm(a.totalDistance) - parseDistanceKm(b.totalDistance))[0]
   }
@@ -122,6 +138,10 @@ export default function App() {
     setSelectedRouteIndex(0)
     localStorage.removeItem('selectedVehicle')
     setDestination(nextDestination)
+  }
+
+  function handlePreferencesChange(newPrefs) {
+    setRoutePreferences(newPrefs);
   }
 
   useEffect(() => {
@@ -205,6 +225,8 @@ export default function App() {
         endCoords={destination}
         selectedVehicle={selectedVehicle}
         onVehicleChange={handleVehicleChange}
+        routePreferences={routePreferences}
+        onPreferencesChange={handlePreferencesChange}
       />
       <ReportButton origin={origin} onReported={fetchIncidents} />
     </div>
