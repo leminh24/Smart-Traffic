@@ -1,6 +1,7 @@
 # NHẬT KÝ THAY ĐỔI DỰ ÁN (CHANGELOG)
 
 Toàn bộ tiến trình cập nhật, sửa lỗi cấu hình và cấu trúc mã nguồn thực tế của hệ thống Smart Traffic.
+h
 
 ---
 
