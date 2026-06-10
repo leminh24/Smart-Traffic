@@ -20,6 +20,7 @@ const WARNING_COLORS = {
  * startCoords: {lat:number, lng:number} | null,
  * endCoords:   {lat:number, lng:number} | null,
  * warningSegments: string[],
+ * selectedVehicle: string | null,
  * onVehicleChange: (vehicleId: string) => void,
  * }} props
  */
@@ -33,6 +34,7 @@ export default function Sidebar({
   startCoords,
   endCoords,
   warningSegments = [],
+  selectedVehicle = null,
   onVehicleChange
 }) {
   const warnStyle = nearbyWarning ? WARNING_COLORS[nearbyWarning.type] || WARNING_COLORS.TAC_DUONG : null
@@ -66,6 +68,7 @@ export default function Sidebar({
       {/* 1. VEHICLE SELECTOR — đặt trên cùng sidebar */}
       <VehicleSelector
         mapRef={mapRef}
+        selectedVehicle={selectedVehicle}
         onVehicleChange={onVehicleChange}
       />
 

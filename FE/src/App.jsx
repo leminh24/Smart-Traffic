@@ -4,6 +4,13 @@ import SearchBar from './components/SearchBar'
 import Sidebar from './components/Sidebar'
 import ReportButton from './components/ReportButton'
 import { getRouteSuggestions, getIncidents } from './services/api'
+import { VEHICLES } from './components/VehicleSelector'
+
+const VEHICLE_ROUTE_META = {
+  walk: { label: 'Đi bộ', osrmProfile: 'foot' },
+  bike: { label: 'Xe máy', osrmProfile: 'bike' },
+  car:  { label: 'Ô tô', osrmProfile: 'driving' },
+}
 
 export default function App() {
   const [origin, setOrigin]                   = useState({ lat: 20.994, lng: 105.807 })
@@ -11,27 +18,55 @@ export default function App() {
   const [routes, setRoutes]                   = useState([])
   const [status, setStatus]                   = useState('Đang tải dữ liệu giao thông...')
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0)
+  const [selectedVehicle, setSelectedVehicle] = useState(null)
   const [incidents, setIncidents]             = useState([])
   const [nearbyWarning, setNearbyWarning]     = useState(null) // { label, distanceM, type }
 
   const pollingRef = useRef(null)
+  const destinationResetRef = useRef(null)
 
   // ── Fetch routes ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (origin && destination) fetchRoutes()
+    else setRoutes([])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [origin, destination])
+  }, [origin, destination, selectedVehicle])
+
+  useEffect(() => {
+    localStorage.removeItem('selectedVehicle')
+  }, [])
+
+  useEffect(() => {
+    if (!destination) {
+      destinationResetRef.current = null
+      setSelectedVehicle(null)
+      setSelectedRouteIndex(0)
+      localStorage.removeItem('selectedVehicle')
+      return
+    }
+
+    const destinationKey = `${destination.lat.toFixed(6)},${destination.lng.toFixed(6)}`
+    if (destinationResetRef.current === destinationKey) return
+
+    destinationResetRef.current = destinationKey
+    setSelectedVehicle(null)
+    setSelectedRouteIndex(0)
+    localStorage.removeItem('selectedVehicle')
+  }, [destination])
 
   async function fetchRoutes() {
     setStatus('Đang tìm tuyến đường...')
     try {
-      const res = await getRouteSuggestions(origin, destination)
+      const res = selectedVehicle
+        ? await getRoutesForVehicle(selectedVehicle)
+        : await getShortestRoutesForAllVehicles()
       if (!res || res.length === 0) {
         setStatus('Không tìm được tuyến đường phù hợp.')
         setRoutes([])
         return
       }
       setRoutes(res)
+      setSelectedRouteIndex(0)
       setStatus(`Hiển thị ${res.length} tuyến đường.`)
     } catch (err) {
       console.error('Lỗi khi fetch routes', err)
@@ -41,6 +76,54 @@ export default function App() {
   }
 
   // ── Fetch incidents + polling mỗi 15 giây ────────────────────────────────────
+  async function getRoutesForVehicle(vehicleId) {
+    const vehicle = VEHICLE_ROUTE_META[vehicleId]
+    const res = await getRouteSuggestions(origin, destination, vehicle?.osrmProfile)
+    return decorateRoutes(res.slice(0, 2), vehicleId, false)
+  }
+
+  async function getShortestRoutesForAllVehicles() {
+    const results = await Promise.all(VEHICLES.map(async (vehicle) => {
+      const res = await getRouteSuggestions(origin, destination, vehicle.osrmProfile)
+      const shortestRoute = pickShortestRoute(res)
+      return shortestRoute ? decorateRoutes([shortestRoute], vehicle.id, true) : []
+    }))
+    return results.flat()
+  }
+
+  function pickShortestRoute(routeList) {
+    return [...routeList].sort((a, b) => parseDistanceKm(a.totalDistance) - parseDistanceKm(b.totalDistance))[0]
+  }
+
+  function parseDistanceKm(distance) {
+    const value = Number.parseFloat(String(distance).replace(',', '.'))
+    return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY
+  }
+
+  function decorateRoutes(routeList, vehicleId, shortestOnly) {
+    const meta = VEHICLE_ROUTE_META[vehicleId]
+    return routeList.map((route, index) => ({
+      ...route,
+      id: `${vehicleId}_${route.id || index}`,
+      vehicleId,
+      routeName: shortestOnly
+        ? `${meta?.label || 'Phương tiện'}: Tuyến ngắn nhất`
+        : `${meta?.label || 'Phương tiện'} - ${route.routeName}`,
+    }))
+  }
+
+  function handleVehicleChange(vehicleId) {
+    setSelectedVehicle(vehicleId)
+    setSelectedRouteIndex(0)
+  }
+
+  function handleDestinationChange(nextDestination) {
+    setSelectedVehicle(null)
+    setSelectedRouteIndex(0)
+    localStorage.removeItem('selectedVehicle')
+    setDestination(nextDestination)
+  }
+
   useEffect(() => {
     fetchIncidents()
 
@@ -101,7 +184,7 @@ export default function App() {
         origin={origin}
         setOrigin={setOrigin}
         destination={destination}
-        setDestination={setDestination}
+        setDestination={handleDestinationChange}
         routes={routes}
         selectedRouteIndex={selectedRouteIndex}
         incidents={incidents}
@@ -110,7 +193,7 @@ export default function App() {
         origin={origin}
         setOrigin={setOrigin}
         destination={destination}
-        setDestination={setDestination}
+        setDestination={handleDestinationChange}
       />
       <Sidebar
         status={status}
@@ -118,6 +201,10 @@ export default function App() {
         selectedRouteIndex={selectedRouteIndex}
         setSelectedRouteIndex={setSelectedRouteIndex}
         nearbyWarning={nearbyWarning}
+        startCoords={origin}
+        endCoords={destination}
+        selectedVehicle={selectedVehicle}
+        onVehicleChange={handleVehicleChange}
       />
       <ReportButton origin={origin} onReported={fetchIncidents} />
     </div>

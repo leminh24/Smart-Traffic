@@ -4,12 +4,11 @@
  * Manages: UI rendering, localStorage persistence, map reset on change
  */
 
-import { useState, useEffect } from "react";
 import { clearAllRouteLayers } from "../services/routeManager";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const STORAGE_KEY = "selectedVehicle";
-const DEFAULT_VEHICLE = "walk";
+export const DEFAULT_VEHICLE = null;
 
 export const VEHICLES = [
   { id: "walk", icon: "🚶", label: "Đi bộ",  osrmProfile: "foot"    },
@@ -18,18 +17,11 @@ export const VEHICLES = [
 ];
 
 /**
- * @param {{ mapRef: React.MutableRefObject, onVehicleChange: Function }} props
+ * @param {{ mapRef: React.MutableRefObject, selectedVehicle: string|null, onVehicleChange: Function }} props
  */
-export default function VehicleSelector({ mapRef, onVehicleChange }) {
-  const [selected, setSelected] = useState(
-    () => localStorage.getItem(STORAGE_KEY) || DEFAULT_VEHICLE
-  );
-
+export default function VehicleSelector({ mapRef, selectedVehicle = DEFAULT_VEHICLE, onVehicleChange }) {
   // Persist sang localStorage + reset map + notify parent
   const handleSelect = (vehicleId) => {
-    if (vehicleId === selected) return;
-
-    setSelected(vehicleId);
     localStorage.setItem(STORAGE_KEY, vehicleId);
 
     if (mapRef?.current) {
@@ -46,10 +38,10 @@ export default function VehicleSelector({ mapRef, onVehicleChange }) {
       {VEHICLES.map((v) => (
         <button
           key={v.id}
-          className={`vehicle-btn${selected === v.id ? " vehicle-btn--active" : ""}`}
+          className={`vehicle-btn${selectedVehicle === v.id ? " vehicle-btn--active" : ""}`}
           data-vehicle={v.id}
           aria-label={v.label}
-          aria-pressed={selected === v.id}
+          aria-pressed={selectedVehicle === v.id}
           title={v.label}
           onClick={() => handleSelect(v.id)}
         >

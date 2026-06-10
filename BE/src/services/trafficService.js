@@ -4,6 +4,33 @@ const axios = require('axios');
 // ── Kho lưu sự cố In-Memory ───────────────────────────────────────────────────
 const incidentsDb = [];
 
+const VEHICLE_TIME_CONFIG = {
+  foot: {
+    routingProfile: 'foot',
+    speedKmh: 4.8,
+    minStopMinutes: 1,
+    trafficMultiplier: { 'Xanh': 1, 'Cam': 1.05, 'Äá»': 1.15 }
+  },
+  bike: {
+    routingProfile: 'driving',
+    speedKmh: 24,
+    minStopMinutes: 2,
+    trafficMultiplier: { 'Xanh': 1, 'Cam': 1.25, 'Äá»': 1.7 }
+  },
+  driving: {
+    routingProfile: 'driving',
+    speedKmh: 32,
+    minStopMinutes: 3,
+    trafficMultiplier: { 'Xanh': 1, 'Cam': 1.8, 'Äá»': 3.2 }
+  }
+};
+
+function normalizeVehicle(vehicle = 'foot') {
+  if (vehicle === 'walk') return 'foot';
+  if (vehicle === 'car') return 'driving';
+  return VEHICLE_TIME_CONFIG[vehicle] ? vehicle : 'foot';
+}
+
 const INCIDENT_LABELS = {
   TAC_DUONG: 'Tắc đường',
   TAI_NAN:   'Tai nạn',
@@ -74,7 +101,7 @@ async function getRealRoadCoordinates(oLat, oLng, dLat, dLng, vehicle = 'foot') 
       return null;
     }
 
-    const profile = vehicle === 'foot' ? 'foot' : 'driving';
+    const profile = VEHICLE_TIME_CONFIG[normalizeVehicle(vehicle)].routingProfile;
     const url = `https://router.project-osrm.org/route/v1/${profile}/${originLng},${originLat};${destLng},${destLat}?overview=full&geometries=geojson&alternatives=true`;
     console.log(`📡 [OSRM Request] ${url}`);
 
@@ -159,6 +186,41 @@ function calculateActualTravelTime(baseDurationSeconds, segments) {
   return Math.max(1, Math.round(actualMinutes));
 }
 
+function calculateSegmentKm(coordinates = []) {
+  let km = 0;
+  for (let i = 1; i < coordinates.length; i++) {
+    const prev = coordinates[i - 1];
+    const current = coordinates[i];
+    km += haversineKm(prev.latitude, prev.longitude, current.latitude, current.longitude);
+  }
+  return km;
+}
+
+function getSegmentMultiplier(status, config) {
+  return config.trafficMultiplier[status] ?? 1;
+}
+
+function calculateActualTravelTime(routeData, segments, vehicle = 'foot') {
+  const normalizedVehicle = normalizeVehicle(vehicle);
+  const config = VEHICLE_TIME_CONFIG[normalizedVehicle];
+  const routeKm = routeData.distance / 1000;
+  const speedBasedMinutes = (routeKm / config.speedKmh) * 60;
+  const osrmMinutes = routeData.duration / 60;
+  const baseMinutes = normalizedVehicle === 'driving'
+    ? Math.max(osrmMinutes, speedBasedMinutes)
+    : speedBasedMinutes;
+
+  const totalSegmentKm = segments.reduce((sum, seg) => sum + calculateSegmentKm(seg.coordinates), 0);
+  if (totalSegmentKm <= 0) return Math.max(1, Math.round(baseMinutes + config.minStopMinutes));
+
+  const weightedMultiplier = segments.reduce((sum, seg) => {
+    const ratio = calculateSegmentKm(seg.coordinates) / totalSegmentKm;
+    return sum + ratio * getSegmentMultiplier(seg.status, config);
+  }, 0);
+
+  return Math.max(1, Math.round((baseMinutes * weightedMultiplier) + config.minStopMinutes));
+}
+
 const getRouteSuggestions = async (oLat, oLng, dLat, dLng, vehicle = 'foot') => {
   const rawRoutes = await getRealRoadCoordinates(oLat, oLng, dLat, dLng, vehicle);
   if (!rawRoutes || rawRoutes.length === 0) return [];
@@ -168,7 +230,7 @@ const getRouteSuggestions = async (oLat, oLng, dLat, dLng, vehicle = 'foot') => 
   const route1Data = rawRoutes[0];
   const coords1 = route1Data.geometry.coordinates.map(c => ({ latitude: c[1], longitude: c[0] }));
   const segments1 = await buildRealTrafficSegments(coords1);
-  const duration1 = calculateActualTravelTime(route1Data.duration, segments1);
+  const duration1 = calculateActualTravelTime(route1Data, segments1, vehicle);
 
   suggestions.push({
     id: 'route_fastest',
@@ -182,7 +244,7 @@ const getRouteSuggestions = async (oLat, oLng, dLat, dLng, vehicle = 'foot') => 
     const route2Data = rawRoutes[1];
     const coords2 = route2Data.geometry.coordinates.map(c => ({ latitude: c[1], longitude: c[0] }));
     const segments2 = await buildRealTrafficSegments(coords2);
-    const duration2 = calculateActualTravelTime(route2Data.duration, segments2);
+    const duration2 = calculateActualTravelTime(route2Data, segments2, vehicle);
     const saved = duration1 - duration2;
 
     suggestions.push({

@@ -4,6 +4,34 @@ Toàn bộ tiến trình cập nhật, sửa lỗi cấu hình và cấu trúc m
 
 ---
 
+## [Nâng cấp] - 2026-06-10
+
+### Added
+
+- **Luồng hiển thị tuyến theo trạng thái chọn phương tiện**:
+  - Khi mở web hoặc chọn điểm đến mới, hệ thống reset trạng thái chọn phương tiện về chưa chọn.
+  - Khi chưa chọn phương tiện, ứng dụng hiển thị tuyến ngắn nhất cho cả 3 phương tiện: đi bộ, xe máy và ô tô.
+  - Khi chọn một phương tiện cụ thể, ứng dụng chỉ hiển thị tối đa 2 tuyến đường phù hợp với phương tiện đó.
+
+- **Đồng bộ điểm đến từ bản đồ vào ô tìm kiếm**:
+  - Khi người dùng click chọn điểm đến trực tiếp trên map, ô tìm kiếm điểm đến tự động cập nhật theo địa chỉ reverse geocoding.
+  - Nếu không lấy được địa chỉ, hệ thống hiển thị tọa độ điểm đến làm fallback.
+
+### Changed
+
+- **Cải tiến thuật toán tính thời gian theo từng phương tiện**:
+  - Backend bổ sung cấu hình riêng cho từng loại phương tiện gồm tốc độ đô thị trung bình, thời gian dừng tối thiểu và mức ảnh hưởng của giao thông.
+  - Đi bộ dùng tốc độ nền hợp lý hơn và ít bị ảnh hưởng bởi tắc đường.
+  - Xe máy dùng tuyến theo profile `driving` nhưng tính thời gian theo tốc độ xe máy đô thị, tránh phụ thuộc vào thời gian ô tô.
+  - Ô tô tiếp tục dùng dữ liệu OSRM kết hợp tốc độ đô thị và hệ số ảnh hưởng giao thông/giờ cao điểm.
+  - Thời gian tuyến đường được tính theo độ dài đoạn đường thay vì chỉ dựa trên số điểm polyline, giúp kết quả ổn định hơn khi route có mật độ điểm khác nhau.
+
+- **Cập nhật ETA Panel ở Frontend**:
+  - Bảng so sánh ETA dùng cùng hướng tính thực tế hơn với backend: đi bộ, xe máy và ô tô có tốc độ/độ trễ riêng.
+  - Xe máy chuyển sang dùng hình học tuyến `driving` để tránh lỗi profile không được OSRM public hỗ trợ ổn định, nhưng vẫn giữ cách ước lượng thời gian riêng cho xe máy.
+
+---
+
 ## [Nâng cấp] - 2026-06-09
 
 ### Added
