@@ -134,6 +134,32 @@ export default function SearchBar({ origin, setOrigin, destination, setDestinati
     setDestVisible(false)
   }
 
+  useEffect(() => {
+    if (!destination) {
+      setDestQuery('')
+      return
+    }
+
+    let cancelled = false
+    const fallback = `Điểm đến (${destination.lat.toFixed(4)}, ${destination.lng.toFixed(4)})`
+
+    fetch(`https://photon.komoot.io/reverse?lat=${destination.lat}&lon=${destination.lng}`)
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return
+        if (data.features && data.features.length > 0) {
+          setDestQuery(formatPhotonAddress(data.features[0]))
+        } else {
+          setDestQuery(fallback)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setDestQuery(fallback)
+      })
+
+    return () => { cancelled = true }
+  }, [destination])
+
   function saveCurrentOrigin(type) {
     if (!origin) return alert('Chưa có vị trí xuất phát để lưu')
     const key = 'smartTrafficSavedAddresses'

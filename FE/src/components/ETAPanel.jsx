@@ -7,8 +7,6 @@
 import { useState, useEffect } from "react";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-const RUSH_HOUR_FACTOR = 1.3; // Hệ số giờ cao điểm cho ô tô — dễ chỉnh
-
 const OSRM_BASE_URL =
   import.meta.env.VITE_OSRM_BASE_URL ?? "https://router.project-osrm.org";
 
@@ -25,6 +23,23 @@ const VEHICLE_META = [
  * @param {{ lat: number, lng: number }} startCoords
  * @param {{ lat: number, lng: number }} endCoords
  */
+const VEHICLE_TIME_CONFIG = {
+  walk: { routingProfile: "foot", speedKmh: 4.8, stopMinutes: 1, rushFactor: 1 },
+  bike: { routingProfile: "driving", speedKmh: 24, stopMinutes: 2, rushFactor: 1 },
+  car: { routingProfile: "driving", speedKmh: 32, stopMinutes: 3, rushFactor: 1.25 },
+};
+
+function estimateVehicleMinutes(vehicle, route) {
+  const config = VEHICLE_TIME_CONFIG[vehicle.id];
+  const km = route.distance / 1000;
+  const speedBasedMinutes = (km / config.speedKmh) * 60;
+  const osrmMinutes = route.duration / 60;
+  const baseMinutes = vehicle.id === "car"
+    ? Math.max(osrmMinutes, speedBasedMinutes)
+    : speedBasedMinutes;
+  return Math.max(1, Math.ceil((baseMinutes * config.rushFactor) + config.stopMinutes));
+}
+
 export async function fetchAllVehicleETA(startCoords, endCoords) {
   const coord = (c) => `${c.lng},${c.lat}`;
   const start = coord(startCoords);
@@ -32,7 +47,7 @@ export async function fetchAllVehicleETA(startCoords, endCoords) {
 
   const requests = VEHICLE_META.map(async (v) => {
     const url =
-      `${OSRM_BASE_URL}/route/v1/${v.profile}/${start};${end}` +
+      `${OSRM_BASE_URL}/route/v1/${VEHICLE_TIME_CONFIG[v.id].routingProfile}/${start};${end}` +
       `?overview=false&annotations=false`;
     try {
       const res  = await fetch(url);
@@ -43,14 +58,12 @@ export async function fetchAllVehicleETA(startCoords, endCoords) {
       }
 
       const route          = data.routes[0];
-      const rawDuration    = route.duration;
       const distanceMeters = route.distance;
-      const duration       = v.applyRushHour ? rawDuration * RUSH_HOUR_FACTOR : rawDuration;
 
       return {
         id     : v.id,
         km     : (distanceMeters / 1000).toFixed(1),
-        minutes: Math.ceil(duration / 60),
+        minutes: estimateVehicleMinutes(v, route),
         error  : false,
       };
     } catch {
@@ -123,7 +136,7 @@ export default function ETAPanel({ startCoords, endCoords }) {
                     <><strong>{d.minutes}</strong> phút</>
                   )}
                   {v.applyRushHour && !d.error && (
-                    <span className="eta-rush" title={`Hệ số giờ cao điểm ×${RUSH_HOUR_FACTOR}`}>
+                    <span className="eta-rush" title={`Hệ số giờ cao điểm ×${VEHICLE_TIME_CONFIG[v.id].rushFactor}`}>
                       ⚠ cao điểm
                     </span>
                   )}
