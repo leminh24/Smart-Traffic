@@ -1,5 +1,0 @@
-{
-  "buildCommand": "cd FE && npm install && npm run build",
-  "outputDirectory": "FE/dist",
-  "framework": "vite"
-}
